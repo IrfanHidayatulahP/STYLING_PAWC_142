@@ -1,0 +1,195 @@
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    .todo-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .todo-card:hover {
+        transform: translateY(-5px); /* Moves the card slightly up */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Adds shadow on hover */
+    }
+    footer.footer {
+        background-color: #003366; /* Dark blue background for footer */
+        color: white; /* White text color */
+        position: absolute; /* Ensures the footer stays at the bottom of the page */
+        bottom: 0;
+        left: 0;
+        width: 100%; /* Make the footer full-width */
+        text-align: center;
+    }
+
+    footer .container {
+        padding: 10px;
+    }
+
+    footer p {
+        margin: 0;
+        font-size: 14px;
+    }
+</style>
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Quinn's</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">About</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/contact">Contact</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/login">Logout</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+<div class="container mt-5">
+    <!-- Judul -->
+    <h1 class="text-center fw-bold mb-4">Todo List</h1>
+    <!-- Tombol Add Todo -->
+    <div class="text-center mb-4">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Add Todo</button>
+    </div>
+
+    <!-- Card Todo List -->
+    <div class="row g-4">
+        <% todos.forEach(todo => { %>
+            <div class="col-md-4">
+                <div class="card shadow-sm todo-card">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">
+                            <%= todo.task %>
+                        </h5>
+                        <p class="card-text text-muted">• Data Todo yang telah di-Add</p>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-sm btn-success editBtn" data-id="<%= todo.id %>">Edit</button>
+                            <button class="btn btn-sm btn-danger deleteBtn" data-id="<%= todo.id %>">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+    </div>
+
+    <!-- Modal Tambah Todo -->
+    <div id="addModal" class="modal fade" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addModalLabel">Add Todo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTodoForm">
+                        <div class="mb-3">
+                            <label for="newTask" class="form-label">Task</label>
+                            <input type="text" id="newTask" class="form-control" placeholder="Enter task" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Add Task</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Todo -->
+    <div id="editModal" class="modal fade" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Todo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTodoForm">
+                        <div class="mb-3">
+                            <label for="editTask" class="form-label">Task</label>
+                            <input type="text" id="editTask" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Add new todo
+        $('#addTodoForm').on('submit', function(e) {
+            e.preventDefault();
+            const task = $('#newTask').val().trim();
+            if (task) {
+                $.ajax({
+                    url: '/todos',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        task: task
+                    }),
+                    success: function() {
+                        location.reload();
+                    }
+                });
+            }
+        });
+
+        // Delete a todo
+        $('.deleteBtn').on('click', function() {
+            const id = $(this).data('id');
+            $.ajax({
+                url: `/todos/${id}`,
+                type: 'DELETE',
+                success: function() {
+                    location.reload();
+                }
+            });
+        });
+
+        // Show edit modal
+        let editId;
+        $('.editBtn').on('click', function() {
+            editId = $(this).data('id');
+            const currentTask = $(this).closest('.card').find('.card-title').text();
+            $('#editTask').val(currentTask);
+            $('#editModal').modal('show');
+        });
+
+        // Update todo
+        $('#editTodoForm').on('submit', function(e) {
+            e.preventDefault();
+            const task = $('#editTask').val().trim();
+            if (task) {
+                $.ajax({
+                    url: `/todos/${editId}`,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        task: task
+                    }),
+                    success: function() {
+                        location.reload();
+                    }
+                });
+            }
+        });
+    });
+</script>
+<footer class="footer">
+    <div class="container text-center py-3">
+        <p>&copy; 2024 Emzhrn. All Rights Reserved.</p>
+    </div>
+</footer>

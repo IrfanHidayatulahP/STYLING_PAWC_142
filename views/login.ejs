@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <!-- Pastikan path file CSS benar -->
+  <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <h1>Login</h1>
+      <!-- Pesan error jika ada -->
+      <% if (typeof error !== 'undefined') { %>
+        <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+      <!-- Form login -->
+      <form action="/login" method="POST">
+        <!-- Gambar di atas username -->
+        <div class="image-container">
+          <img src="/images/icon-6951393.jpg" alt="User Icon" class="user-icon">
+        </div>
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Enter your username" required>
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="login-button">Login</button>
+        <p>Belum punya akun? <a href="/signup">Daftar di sini</a>.</p>
+      </form>
+    </div>
+</body>
+</html>
